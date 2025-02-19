@@ -6,18 +6,59 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Stethoscope, User } from "lucide-react";
 import { useState } from "react";
 import { UserRole } from "@/types/auth";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just redirect to appropriate dashboard based on role
-    if (selectedRole === "doctor") {
-      navigate("/patients");
-    } else {
-      navigate("/dashboard");
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // Check user role in profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profile?.role !== selectedRole) {
+        throw new Error('Invalid role for this user');
+      }
+
+      toast({
+        title: "Success",
+        description: "Successfully logged in",
+      });
+
+      // Redirect based on role
+      if (selectedRole === "doctor") {
+        navigate("/patients");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,6 +127,8 @@ const Login = () => {
                   placeholder="Email"
                   className="pl-10"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -97,6 +140,8 @@ const Login = () => {
                   placeholder="Password"
                   className="pl-10"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
@@ -105,14 +150,16 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full bg-medical-600 hover:bg-medical-700"
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
             <div className="text-sm text-center space-y-2">
               <Button
                 variant="link"
                 className="text-medical-600 hover:text-medical-800 p-0"
                 onClick={() => setSelectedRole(null)}
+                disabled={loading}
               >
                 Switch role
               </Button>
@@ -122,6 +169,7 @@ const Login = () => {
                   variant="link"
                   className="text-medical-600 hover:text-medical-800 p-0"
                   onClick={() => navigate("/register")}
+                  disabled={loading}
                 >
                   Register
                 </Button>
