@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
+import DoctorDashboard from "./pages/DoctorDashboard";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +41,7 @@ const App = () => (
             path="/patients"
             element={
               <Layout role="doctor" userName="Dr. Smith">
-                <div className="text-center">Patients Coming Soon</div>
+                <DoctorDashboard />
               </Layout>
             }
           />
