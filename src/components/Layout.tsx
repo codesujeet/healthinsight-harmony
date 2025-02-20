@@ -3,6 +3,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/types/auth";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabase";
 import {
   Bell,
   ChevronDown,
@@ -19,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,8 +29,32 @@ interface LayoutProps {
   userName?: string;
 }
 
-const Layout = ({ children, role = "patient", userName = "Guest" }: LayoutProps) => {
+const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
+  const { user, userRole } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+      toast({
+        title: "Success",
+        description: "Successfully logged out",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-medical-50 to-white">
@@ -46,7 +73,7 @@ const Layout = ({ children, role = "patient", userName = "Guest" }: LayoutProps)
                 >
                   Dashboard
                 </Button>
-                {role === "doctor" && (
+                {userRole === "doctor" && (
                   <Button
                     variant="ghost"
                     className="text-medical-600 hover:text-medical-800"
@@ -80,7 +107,7 @@ const Layout = ({ children, role = "patient", userName = "Guest" }: LayoutProps)
                     className="flex items-center space-x-2 text-medical-600 hover:text-medical-800"
                   >
                     <User className="h-5 w-5" />
-                    <span>{userName}</span>
+                    <span>{user.email}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -100,7 +127,10 @@ const Layout = ({ children, role = "patient", userName = "Guest" }: LayoutProps)
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem 
+                    className="text-red-600"
+                    onClick={handleLogout}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
