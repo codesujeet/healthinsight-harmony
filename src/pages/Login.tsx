@@ -30,14 +30,16 @@ const Login = () => {
       if (error) throw error;
 
       // Check user role in profiles table
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
         .single();
 
+      if (profileError) throw profileError;
+
       if (profile?.role !== selectedRole) {
-        throw new Error('Invalid role for this user');
+        throw new Error(`Invalid credentials for ${selectedRole} role`);
       }
 
       toast({
