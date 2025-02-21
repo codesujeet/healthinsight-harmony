@@ -37,18 +37,18 @@ const Register = () => {
       // Create profile with role and additional info
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .insert({
+          id: authData.user.id,
           role: selectedRole,
           name,
           specialization: selectedRole === 'doctor' ? specialization : null,
-        })
-        .eq('id', authData.user.id);
+        });
 
       if (profileError) throw profileError;
 
       toast({
         title: "Success",
-        description: "Account created successfully",
+        description: "Account created successfully. Please check your email for verification.",
       });
 
       // Redirect to login
