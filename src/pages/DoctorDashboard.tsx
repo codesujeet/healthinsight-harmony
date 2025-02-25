@@ -45,7 +45,7 @@ const expensesData = [
 const patientStatuses = [
   { name: "Critical", value: 8 },
   { name: "Stable", value: 45 },
-  { name: "Recovering", value: 32 },
+  
   { name: "Healthy", value: 15 },
 ];
 
