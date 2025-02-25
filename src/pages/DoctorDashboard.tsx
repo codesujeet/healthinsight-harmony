@@ -38,7 +38,7 @@ const expensesData = [
   { month: "Feb", amount: 3800 },
   { month: "Mar", amount: 5200 },
   { month: "Apr", amount: 4900 },
-  { month: "May", amount: 6100 },
+  
   { month: "Jun", amount: 5600 },
 ];
 
